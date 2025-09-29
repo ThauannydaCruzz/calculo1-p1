@@ -25,7 +25,7 @@ export const GraphDisplay = ({ functionInput, point, analysisType }: GraphDispla
     ctx.scale(dpr, dpr);
 
     // Clear canvas
-    ctx.fillStyle = "#0f0f0f";
+    ctx.fillStyle = "#000000";
     ctx.fillRect(0, 0, rect.width, rect.height);
 
     // Graph settings
@@ -36,7 +36,7 @@ export const GraphDisplay = ({ functionInput, point, analysisType }: GraphDispla
     const scale = 40;
 
     // Draw grid
-    ctx.strokeStyle = "#1f1f1f";
+    ctx.strokeStyle = "#2a2a2a";
     ctx.lineWidth = 1;
 
     for (let x = 0; x < width; x += scale) {
@@ -54,7 +54,7 @@ export const GraphDisplay = ({ functionInput, point, analysisType }: GraphDispla
     }
 
     // Draw axes
-    ctx.strokeStyle = "#3f3f3f";
+    ctx.strokeStyle = "#555555";
     ctx.lineWidth = 2;
 
     // X-axis
@@ -149,14 +149,48 @@ export const GraphDisplay = ({ functionInput, point, analysisType }: GraphDispla
         }
       }
 
-      // Add legend
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "14px monospace";
-      ctx.textAlign = "left";
-      ctx.fillText("— Função original", 20, height - 60);
+      // Add legend at bottom center
+      const legendY = height - 20;
+      ctx.font = "13px monospace";
+      ctx.textAlign = "center";
       
+      // Measure text widths to position elements
+      const legendSpacing = 150;
+      const startX = centerX - legendSpacing;
+      
+      // Function line indicator
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(startX, legendY);
+      ctx.lineTo(startX + 30, legendY);
+      ctx.stroke();
+      
+      ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "left";
+      ctx.fillText("Função original", startX + 40, legendY + 4);
+      
+      // Derivative/Auxiliary line indicator (dashed)
+      ctx.strokeStyle = "#888888";
+      ctx.setLineDash([5, 5]);
+      ctx.beginPath();
+      ctx.moveTo(startX + legendSpacing, legendY);
+      ctx.lineTo(startX + legendSpacing + 30, legendY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      
+      ctx.fillStyle = "#888888";
+      ctx.fillText("Derivada/Auxiliar", startX + legendSpacing + 40, legendY + 4);
+      
+      // Important points indicator
+      const pointX = startX + legendSpacing * 2 + 50;
       ctx.fillStyle = "#ef4444";
-      ctx.fillText("● Pontos importantes", 20, height - 35);
+      ctx.beginPath();
+      ctx.arc(pointX + 10, legendY, 5, 0, 2 * Math.PI);
+      ctx.fill();
+      
+      ctx.fillStyle = "#ffffff";
+      ctx.fillText("Pontos importantes", pointX + 25, legendY + 4);
 
     } catch (error) {
       ctx.fillStyle = "#ef4444";
@@ -169,8 +203,8 @@ export const GraphDisplay = ({ functionInput, point, analysisType }: GraphDispla
   return (
     <canvas
       ref={canvasRef}
-      className="w-full h-[400px] rounded-lg border border-border"
-      style={{ imageRendering: "pixelated" }}
+      className="w-full h-[500px] rounded-none border-2 border-gray-700 bg-black"
+      style={{ imageRendering: "auto" }}
     />
   );
 };

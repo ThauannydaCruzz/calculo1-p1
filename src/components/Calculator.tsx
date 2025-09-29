@@ -190,23 +190,23 @@ export const Calculator = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background py-8 px-4">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl md:text-5xl font-bold text-center mb-12 text-foreground tracking-tight">
+    <div className="min-h-screen bg-black py-12 px-6">
+      <div className="max-w-[1600px] mx-auto">
+        <h1 className="text-4xl font-bold text-center mb-10 text-white">
           {getTitle()}
         </h1>
 
-        <Card className="p-6 md:p-8 mb-8 bg-card border-border shadow-xl">
+        <div className="mb-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <div>
-              <label className="block text-sm font-medium mb-2 text-muted-foreground">
+              <label className="block text-base font-normal mb-3 text-white">
                 Tipo de Análise
               </label>
               <Select value={analysisType} onValueChange={(value) => setAnalysisType(value as AnalysisType)}>
-                <SelectTrigger className="w-full bg-input border-border">
+                <SelectTrigger className="w-full bg-black border-2 border-gray-600 text-white h-12">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-popover border-border">
+                <SelectContent className="bg-black border-2 border-gray-600">
                   <SelectItem value="limite">Limite</SelectItem>
                   <SelectItem value="derivada">Derivada</SelectItem>
                   <SelectItem value="continuidade">Continuidade</SelectItem>
@@ -216,56 +216,59 @@ export const Calculator = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2 text-muted-foreground">
+              <label className="block text-base font-normal mb-3 text-white">
                 Função f(x)
               </label>
               <Input
                 value={functionInput}
                 onChange={(e) => setFunctionInput(e.target.value)}
                 placeholder="Ex: (x^2 - 4)/(x - 2)"
-                className="bg-input border-border"
+                className="bg-black border-2 border-gray-600 text-white h-12"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2 text-muted-foreground">
+              <label className="block text-base font-normal mb-3 text-white">
                 Ponto de Análise
               </label>
               <Input
                 value={point}
                 onChange={(e) => setPoint(e.target.value)}
                 placeholder="Ex: 3"
-                className="bg-input border-border"
+                className="bg-black border-2 border-gray-600 text-white h-12"
               />
             </div>
           </div>
 
-          <Button 
-            onClick={handleCalculate}
-            className="w-full md:w-auto bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-8 py-6 text-lg transition-all"
-          >
-            Calcular
-          </Button>
-        </Card>
+          <div className="flex justify-center">
+            <Button 
+              onClick={handleCalculate}
+              className="bg-black border-2 border-gray-600 hover:bg-gray-900 text-white font-normal px-12 py-3 text-base transition-all"
+            >
+              Calcular
+            </Button>
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <Card className="p-6 bg-card border-border shadow-xl">
-            <h2 className="text-2xl font-bold mb-4 text-foreground">Representação Gráfica</h2>
+          <div className="border-2 border-gray-600 bg-black p-6">
+            <h2 className="text-2xl font-bold mb-6 text-white">Representação Gráfica</h2>
             <GraphDisplay 
               functionInput={functionInput} 
               point={parseFloat(point)} 
               analysisType={analysisType}
             />
-          </Card>
+          </div>
 
-          <Card className="p-6 bg-card border-border shadow-xl">
-            <h2 className="text-2xl font-bold mb-4 text-foreground">Resolução</h2>
+          <div className="border-2 border-gray-600 bg-black p-6">
+            <h2 className="text-2xl font-bold mb-6 text-white">Resolução</h2>
+            <h3 className="text-xl font-bold mb-4 text-white">Passos da Solução</h3>
             <SolutionSteps steps={steps} />
-          </Card>
+          </div>
         </div>
 
-        <footer className="mt-16 text-center text-sm text-muted-foreground">
-          <p className="mb-2">CÁLCULO DIFERENCIAL E INTEGRAL 04C-2025/2</p>
+        <footer className="mt-16 text-center text-xs text-gray-400">
+          <p className="mb-1">CÁLCULO DIFERENCIAL E INTEGRAL 04C-2025/2</p>
           <p>by Ana Julia Romera, Gabriela Akemi, Sophia Mattos e Thauanny da Cruz</p>
         </footer>
       </div>
