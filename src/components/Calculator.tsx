@@ -21,21 +21,20 @@ export const Calculator = () => {
       const steps: string[] = [];
       const x0 = parseFloat(point);
       
-      // Convert function to LaTeX-like notation
+      // Convert function to LaTeX
       const latexFunc = functionInput
         .replace(/\^/g, '^')
         .replace(/\*/g, ' \\cdot ')
-        .replace(/\(/g, '(')
-        .replace(/\)/g, ')');
+        .replace(/sqrt/g, '\\sqrt');
       
-      steps.push(`**PASSO 1** — Calcular o limite\n\n$$\\lim_{x \\to ${point}} ${latexFunc}$$`);
+      steps.push(`PASSO 1 — Calcular o limite\n\n$$\\lim_{x \\to ${point}} ${latexFunc}$$`);
       
       // Parse the function
       const parsed = math.parse(functionInput);
       const compiled = parsed.compile();
       
       // Try direct substitution
-      steps.push(`**PASSO 2** — Substituição direta\n\nSubstituindo $x = ${point}$ na função:`);
+      steps.push(`PASSO 2 — Substituição direta\n\nSubstituindo $x = ${point}$ na função:`);
       
       let directResult;
       let isIndeterminate = false;
@@ -43,7 +42,7 @@ export const Calculator = () => {
       try {
         directResult = compiled.evaluate({ x: x0 });
         if (isFinite(directResult)) {
-          steps.push(`**PASSO 3** — Resultado\n\n$$f(${point}) = ${directResult.toFixed(4)}$$\n\nO limite existe e é igual a $${directResult.toFixed(4)}$`);
+          steps.push(`PASSO 3 — Resultado\n\n$$f(${point}) = ${directResult.toFixed(6)}$$\n\nComo a função está definida no ponto, o limite é:\n\n$$\\lim_{x \\to ${point}} f(x) = ${directResult.toFixed(6)}$$`);
           setSteps(steps);
           setResult(directResult);
           return;
@@ -55,23 +54,44 @@ export const Calculator = () => {
       }
       
       if (isIndeterminate) {
-        steps.push(`**PASSO 3** — Forma indeterminada detectada\n\nA substituição direta resulta em $\\frac{0}{0}$ ou $\\frac{\\infty}{\\infty}$.\n\nCalculando limites laterais...`);
+        steps.push(`PASSO 3 — Forma indeterminada\n\nA substituição direta resulta em indeterminação ($\\frac{0}{0}$ ou $\\frac{\\infty}{\\infty}$).\n\nCalculando limites laterais para determinar o comportamento:`);
       }
       
-      // Calculate limit numerically
-      const delta = 0.0001;
-      const leftLimit = compiled.evaluate({ x: x0 - delta });
-      const rightLimit = compiled.evaluate({ x: x0 + delta });
+      // Calculate limit with higher precision
+      const deltas = [0.1, 0.01, 0.001, 0.0001, 0.00001];
+      let leftLimits = [];
+      let rightLimits = [];
       
-      steps.push(`**PASSO 4** — Limites laterais\n\n$$\\lim_{x \\to ${point}^-} f(x) = ${leftLimit.toFixed(4)}$$\n\n$$\\lim_{x \\to ${point}^+} f(x) = ${rightLimit.toFixed(4)}$$`);
+      for (const delta of deltas) {
+        try {
+          leftLimits.push(compiled.evaluate({ x: x0 - delta }));
+          rightLimits.push(compiled.evaluate({ x: x0 + delta }));
+        } catch (e) {
+          // Skip if error
+        }
+      }
       
-      const avgLimit = (leftLimit + rightLimit) / 2;
-      steps.push(`**PASSO 5** — Conclusão\n\nComo os limites laterais são iguais:\n\n$$\\lim_{x \\to ${point}} f(x) = ${avgLimit.toFixed(4)}$$`);
+      // Get the most precise limits (last valid ones)
+      const leftLimit = leftLimits[leftLimits.length - 1];
+      const rightLimit = rightLimits[rightLimits.length - 1];
       
-      setSteps(steps);
-      setResult(avgLimit);
+      steps.push(`PASSO 4 — Limites laterais\n\nCalculando valores cada vez mais próximos de $x = ${point}$:\n\n$$\\lim_{x \\to ${point}^-} f(x) = ${leftLimit.toFixed(6)}$$\n\n$$\\lim_{x \\to ${point}^+} f(x) = ${rightLimit.toFixed(6)}$$`);
+      
+      const tolerance = 0.001;
+      const limitsEqual = Math.abs(leftLimit - rightLimit) < tolerance;
+      
+      if (limitsEqual) {
+        const avgLimit = (leftLimit + rightLimit) / 2;
+        steps.push(`PASSO 5 — Conclusão\n\nComo os limites laterais são iguais (diferença < ${tolerance}):\n\n$$\\lim_{x \\to ${point}} f(x) = ${avgLimit.toFixed(6)}$$\n\nObservação: Há uma descontinuidade removível em $x = ${point}$`);
+        setSteps(steps);
+        setResult(avgLimit);
+      } else {
+        steps.push(`PASSO 5 — Conclusão\n\nComo os limites laterais são diferentes:\n\n$$\\lim_{x \\to ${point}^-} f(x) \\neq \\lim_{x \\to ${point}^+} f(x)$$\n\nO limite não existe neste ponto.`);
+        setSteps(steps);
+        setResult("Não existe");
+      }
     } catch (error) {
-      setSteps(["Erro ao calcular. Verifique a sintaxe da função."]);
+      setSteps(["ERRO — Verifique a sintaxe da função\n\nUse notação matemática: x^2 para potência, * para multiplicação, / para divisão.\n\nExemplo: (x^2 - 4)/(x - 2)"]);
       setResult(null);
     }
   };
@@ -84,32 +104,52 @@ export const Calculator = () => {
       const latexFunc = functionInput
         .replace(/\^/g, '^')
         .replace(/\*/g, ' \\cdot ')
-        .replace(/\(/g, '(')
-        .replace(/\)/g, ')');
+        .replace(/sqrt/g, '\\sqrt');
       
-      steps.push(`**PASSO 1** — Função a derivar\n\n$$f(x) = ${latexFunc}$$`);
-      steps.push(`**PASSO 2** — Aplicar a definição\n\n$$f'(x) = \\lim_{h \\to 0} \\frac{f(x + h) - f(x)}{h}$$`);
+      steps.push(`PASSO 1 — Função a derivar\n\n$$f(x) = ${latexFunc}$$`);
+      steps.push(`PASSO 2 — Definição de derivada\n\n$$f'(x) = \\lim_{h \\to 0} \\frac{f(x + h) - f(x)}{h}$$\n\nAplicando regras de derivação:`);
       
       const parsed = math.parse(functionInput);
-      const derivative = math.derivative(parsed, 'x');
+      
+      // Calculate derivative
+      let derivative;
+      try {
+        derivative = math.derivative(parsed, 'x');
+      } catch (e) {
+        steps.push(`ERRO — Não foi possível calcular a derivada automaticamente.\n\nVerifique se a função é derivável.`);
+        setSteps(steps);
+        setResult(null);
+        return;
+      }
       
       const latexDeriv = derivative.toString()
         .replace(/\^/g, '^')
         .replace(/\*/g, ' \\cdot ')
-        .replace(/\(/g, '(')
-        .replace(/\)/g, ')');
+        .replace(/sqrt/g, '\\sqrt');
       
-      steps.push(`**PASSO 3** — Calcular a derivada\n\n$$f'(x) = ${latexDeriv}$$`);
+      steps.push(`PASSO 3 — Derivada calculada\n\n$$f'(x) = ${latexDeriv}$$`);
       
+      // Evaluate at the point
       const compiled = derivative.compile();
-      const valueAtPoint = compiled.evaluate({ x: x0 });
+      let valueAtPoint;
       
-      steps.push(`**PASSO 4** — Avaliar no ponto $x = ${point}$\n\n$$f'(${point}) = ${valueAtPoint.toFixed(4)}$$`);
+      try {
+        valueAtPoint = compiled.evaluate({ x: x0 });
+        
+        if (!isFinite(valueAtPoint)) {
+          steps.push(`PASSO 4 — Avaliação no ponto $x = ${point}$\n\n$$f'(${point}) = \\text{indefinido}$$\n\nA derivada não existe neste ponto (possivelmente uma descontinuidade ou ponto de inflexão vertical).`);
+        } else {
+          steps.push(`PASSO 4 — Avaliação no ponto $x = ${point}$\n\n$$f'(${point}) = ${valueAtPoint.toFixed(6)}$$\n\nInterpretação geométrica:\n• Se $f'(${point}) > 0$: a função é crescente em $x = ${point}$\n• Se $f'(${point}) < 0$: a função é decrescente em $x = ${point}$\n• Se $f'(${point}) = 0$: possível ponto crítico (máximo, mínimo ou inflexão)`);
+        }
+      } catch (e) {
+        steps.push(`PASSO 4 — Avaliação no ponto $x = ${point}$\n\n$$f'(${point}) = \\text{indefinido}$$\n\nA derivada não está definida neste ponto.`);
+        valueAtPoint = undefined;
+      }
       
       setSteps(steps);
       setResult(derivative.toString());
     } catch (error) {
-      setSteps(["Erro ao calcular. Verifique a sintaxe da função."]);
+      setSteps(["ERRO — Verifique a sintaxe da função\n\nUse notação matemática correta."]);
       setResult(null);
     }
   };
@@ -122,52 +162,100 @@ export const Calculator = () => {
       const latexFunc = functionInput
         .replace(/\^/g, '^')
         .replace(/\*/g, ' \\cdot ')
-        .replace(/\(/g, '(')
-        .replace(/\)/g, ')');
+        .replace(/sqrt/g, '\\sqrt');
       
-      steps.push(`**PASSO 1** — Verificar continuidade\n\nAnalisando $$f(x) = ${latexFunc}$$ no ponto $x = ${point}$`);
+      steps.push(`PASSO 1 — Verificar continuidade\n\nAnalisando a função $$f(x) = ${latexFunc}$$ no ponto $x = ${point}$\n\nUma função é contínua em um ponto se:\n1. $f(a)$ existe\n2. $\\lim_{x \\to a} f(x)$ existe\n3. $\\lim_{x \\to a} f(x) = f(a)$`);
       
       const parsed = math.parse(functionInput);
       const compiled = parsed.compile();
       
-      steps.push(`**PASSO 2** — Calcular $f(${point})$`);
+      // Check if f(a) exists
+      steps.push(`PASSO 2 — Verificar se $f(${point})$ existe`);
       let fx0;
+      let fx0Exists = false;
+      
       try {
         fx0 = compiled.evaluate({ x: x0 });
-        steps.push(`$$f(${point}) = ${fx0.toFixed(4)}$$\n\n✓ A função está definida no ponto`);
+        if (isFinite(fx0)) {
+          steps.push(`$$f(${point}) = ${fx0.toFixed(6)}$$\n\n✓ Condição 1 satisfeita: $f(${point})$ existe`);
+          fx0Exists = true;
+        } else {
+          steps.push(`$$f(${point}) = \\text{indefinido}$$\n\n✗ Condição 1 não satisfeita: $f(${point})$ não existe`);
+        }
       } catch (e) {
-        steps.push(`$$f(${point}) = \\text{não definida}$$\n\n✗ A função não está definida no ponto`);
-        fx0 = undefined;
+        steps.push(`$$f(${point}) = \\text{não definido}$$\n\n✗ Condição 1 não satisfeita: $f(${point})$ não está no domínio`);
       }
       
-      steps.push(`**PASSO 3** — Calcular limites laterais`);
-      const delta = 0.0001;
-      const leftLimit = compiled.evaluate({ x: x0 - delta });
-      const rightLimit = compiled.evaluate({ x: x0 + delta });
+      // Calculate limits
+      steps.push(`PASSO 3 — Verificar se $\\lim_{x \\to ${point}} f(x)$ existe\n\nCalculando limites laterais:`);
       
-      steps.push(`$$\\lim_{x \\to ${point}^-} f(x) = ${leftLimit.toFixed(4)}$$\n\n$$\\lim_{x \\to ${point}^+} f(x) = ${rightLimit.toFixed(4)}$$`);
+      const deltas = [0.1, 0.01, 0.001, 0.0001];
+      let leftLimits = [];
+      let rightLimits = [];
       
-      const limitsEqual = Math.abs(leftLimit - rightLimit) < 0.01;
-      const continuous = limitsEqual && fx0 !== undefined && Math.abs(leftLimit - fx0) < 0.01;
+      for (const delta of deltas) {
+        try {
+          const left = compiled.evaluate({ x: x0 - delta });
+          const right = compiled.evaluate({ x: x0 + delta });
+          if (isFinite(left)) leftLimits.push(left);
+          if (isFinite(right)) rightLimits.push(right);
+        } catch (e) {
+          // Skip
+        }
+      }
       
-      let conclusion = `**PASSO 4** — Conclusão\n\n`;
+      if (leftLimits.length === 0 || rightLimits.length === 0) {
+        steps.push(`Os limites laterais não puderam ser calculados.\n\n✗ Condição 2 não satisfeita: o limite não existe`);
+        steps.push(`CONCLUSÃO\n\nA função NÃO É CONTÍNUA em $x = ${point}$`);
+        setSteps(steps);
+        setResult("Descontínua");
+        return;
+      }
+      
+      const leftLimit = leftLimits[leftLimits.length - 1];
+      const rightLimit = rightLimits[rightLimits.length - 1];
+      
+      steps.push(`$$\\lim_{x \\to ${point}^-} f(x) = ${leftLimit.toFixed(6)}$$\n\n$$\\lim_{x \\to ${point}^+} f(x) = ${rightLimit.toFixed(6)}$$`);
+      
+      const tolerance = 0.001;
+      const limitsEqual = Math.abs(leftLimit - rightLimit) < tolerance;
+      const limitValue = (leftLimit + rightLimit) / 2;
       
       if (!limitsEqual) {
-        conclusion += `✗ Os limites laterais são diferentes\n\nA função **NÃO é contínua** em $x = ${point}$`;
-      } else if (fx0 === undefined) {
-        conclusion += `✗ A função não está definida no ponto\n\nA função **NÃO é contínua** em $x = ${point}$\n\n(Descontinuidade removível)`;
-      } else if (!continuous) {
-        conclusion += `✗ $f(${point}) \\neq \\lim_{x \\to ${point}} f(x)$\n\nA função **NÃO é contínua** em $x = ${point}$`;
-      } else {
-        conclusion += `✓ **Condições satisfeitas:**\n• $f(${point})$ existe\n• $\\lim_{x \\to ${point}} f(x)$ existe\n• $f(${point}) = \\lim_{x \\to ${point}} f(x)$\n\nA função **É CONTÍNUA** em $x = ${point}$`;
+        steps.push(`✗ Condição 2 não satisfeita: limites laterais diferentes\n\n$$\\lim_{x \\to ${point}^-} f(x) \\neq \\lim_{x \\to ${point}^+} f(x)$$`);
+        steps.push(`CONCLUSÃO\n\nA função NÃO É CONTÍNUA em $x = ${point}$\n\nTipo: Descontinuidade de salto (jump discontinuity)`);
+        setSteps(steps);
+        setResult("Descontínua");
+        return;
       }
       
-      steps.push(conclusion);
+      steps.push(`✓ Condição 2 satisfeita: $\\lim_{x \\to ${point}} f(x) = ${limitValue.toFixed(6)}$`);
+      
+      // Check if limit equals function value
+      steps.push(`PASSO 4 — Verificar se $\\lim_{x \\to ${point}} f(x) = f(${point})$`);
+      
+      if (!fx0Exists) {
+        steps.push(`✗ Condição 3 não satisfeita: $f(${point})$ não existe\n\nCONCLUSÃO\n\nA função NÃO É CONTÍNUA em $x = ${point}$\n\nTipo: Descontinuidade removível\n\nPara tornar a função contínua, basta redefinir: $f(${point}) = ${limitValue.toFixed(6)}$`);
+        setSteps(steps);
+        setResult("Descontínua");
+        return;
+      }
+      
+      const valuesEqual = Math.abs(fx0 - limitValue) < tolerance;
+      
+      if (!valuesEqual) {
+        steps.push(`$$f(${point}) = ${fx0.toFixed(6)}$$\n$$\\lim_{x \\to ${point}} f(x) = ${limitValue.toFixed(6)}$$\n\n✗ Condição 3 não satisfeita: $f(${point}) \\neq \\lim_{x \\to ${point}} f(x)$\n\nCONCLUSÃO\n\nA função NÃO É CONTÍNUA em $x = ${point}$\n\nTipo: Descontinuidade removível`);
+        setSteps(steps);
+        setResult("Descontínua");
+        return;
+      }
+      
+      steps.push(`$$f(${point}) = ${fx0.toFixed(6)} = \\lim_{x \\to ${point}} f(x)$$\n\n✓ Condição 3 satisfeita\n\nCONCLUSÃO\n\nA função É CONTÍNUA em $x = ${point}$\n\nTodas as três condições foram satisfeitas.`);
       
       setSteps(steps);
-      setResult(continuous ? "Contínua" : "Descontínua");
+      setResult("Contínua");
     } catch (error) {
-      setSteps(["Erro ao verificar. Verifique a sintaxe da função."]);
+      setSteps(["ERRO — Verifique a sintaxe da função"]);
       setResult(null);
     }
   };
@@ -179,10 +267,9 @@ export const Calculator = () => {
       const latexFunc = functionInput
         .replace(/\^/g, '^')
         .replace(/\*/g, ' \\cdot ')
-        .replace(/\(/g, '(')
-        .replace(/\)/g, ')');
+        .replace(/sqrt/g, '\\sqrt');
       
-      steps.push(`**PASSO 1** — Identificar a função\n\n$$f(x) = ${latexFunc}$$`);
+      steps.push(`PASSO 1 — Identificar a função\n\n$$f(x) = ${latexFunc}$$`);
       
       // Check if it's a rational function (division)
       const isRational = functionInput.includes('/');
@@ -202,56 +289,128 @@ export const Calculator = () => {
             .replace(/\^/g, '^')
             .replace(/\*/g, ' \\cdot ');
           
-          steps.push(`**PASSO 2** — Separar numerador e denominador\n\n$$N(x) = ${latexNum}$$\n\n$$D(x) = ${latexDen}$$\n\n$$f(x) = \\frac{N(x)}{D(x)}$$`);
+          steps.push(`PASSO 2 — Separar numerador e denominador\n\n$$N(x) = ${latexNum}$$\n\n$$D(x) = ${latexDen}$$\n\n$$f(x) = \\frac{N(x)}{D(x)}$$`);
           
           const parsedNum = math.parse(numerator);
           const compiledNum = parsedNum.compile();
           const parsedDen = math.parse(denominator);
           const compiledDen = parsedDen.compile();
           
-          steps.push(`**PASSO 3** — Estudo de sinal do numerador $N(x)$`);
+          // Find zeros of numerator and denominator
+          steps.push(`PASSO 3 — Encontrar zeros do numerador $N(x)$\n\nZeros são valores onde $N(x) = 0$`);
           
-          const testPoints = [-10, -5, -3, -2, -1, 0, 1, 2, 3, 5, 10];
-          const numSigns: string[] = [];
-          const denSigns: string[] = [];
-          const resultSigns: string[] = [];
+          const rangePoints = [];
+          for (let x = -20; x <= 20; x += 0.5) {
+            rangePoints.push(x);
+          }
           
-          for (const x of testPoints) {
+          const numZeros = [];
+          const denZeros = [];
+          
+          // Find sign changes for zeros
+          for (let i = 0; i < rangePoints.length - 1; i++) {
             try {
-              const numValue = compiledNum.evaluate({ x });
-              const denValue = compiledDen.evaluate({ x });
+              const x1 = rangePoints[i];
+              const x2 = rangePoints[i + 1];
               
-              let numSign = Math.abs(numValue) < 0.001 ? "0" : numValue > 0 ? "+" : "−";
-              let denSign = Math.abs(denValue) < 0.001 ? "0" : denValue > 0 ? "+" : "−";
+              const n1 = compiledNum.evaluate({ x: x1 });
+              const n2 = compiledNum.evaluate({ x: x2 });
               
-              numSigns.push(`$x=${x}$: $${numSign}$`);
-              denSigns.push(`$x=${x}$: $${denSign}$`);
-              
-              if (denSign === "0") {
-                resultSigns.push(`$x=${x}$: $\\nexists$ (não existe)`);
-              } else if (numSign === "0") {
-                resultSigns.push(`$x=${x}$: $0$ (zero)`);
-              } else {
-                const resultSign = (numSign === "+" && denSign === "+") || (numSign === "−" && denSign === "−") ? "+" : "−";
-                resultSigns.push(`$x=${x}$: $${resultSign}$`);
+              if (Math.abs(n1) < 0.01) numZeros.push(x1);
+              if (n1 * n2 < 0) {
+                // Sign change detected, zero between x1 and x2
+                const zero = (x1 + x2) / 2;
+                numZeros.push(zero);
               }
             } catch (e) {
-              numSigns.push(`$x=${x}$: $\\nexists$`);
-              denSigns.push(`$x=${x}$: $\\nexists$`);
-              resultSigns.push(`$x=${x}$: $\\nexists$`);
+              // Skip
             }
           }
           
-          steps.push(`Análise do numerador $N(x)$:\n\n${numSigns.join(' | ')}`);
-          steps.push(`**PASSO 4** — Estudo de sinal do denominador $D(x)$\n\nAnálise do denominador $D(x)$:\n\n${denSigns.join(' | ')}`);
-          steps.push(`**PASSO 5** — Sinal da função $$f(x) = \\frac{N(x)}{D(x)}$$\n\n**Regra dos sinais:**\n$\\frac{(+)}{(+)} = +$ | $\\frac{(-)}{(-)} = +$ | $\\frac{(+)}{(-)} = -$ | $\\frac{(-)}{(+)} = -$\n\n${resultSigns.join(' | ')}`);
+          for (let i = 0; i < rangePoints.length - 1; i++) {
+            try {
+              const x1 = rangePoints[i];
+              const x2 = rangePoints[i + 1];
+              
+              const d1 = compiledDen.evaluate({ x: x1 });
+              const d2 = compiledDen.evaluate({ x: x2 });
+              
+              if (Math.abs(d1) < 0.01) denZeros.push(x1);
+              if (d1 * d2 < 0) {
+                const zero = (x1 + x2) / 2;
+                denZeros.push(zero);
+              }
+            } catch (e) {
+              // Skip
+            }
+          }
+          
+          // Remove duplicates and sort
+          const uniqueNumZeros = [...new Set(numZeros.map(z => Math.round(z * 2) / 2))].sort((a, b) => a - b);
+          const uniqueDenZeros = [...new Set(denZeros.map(z => Math.round(z * 2) / 2))].sort((a, b) => a - b);
+          
+          if (uniqueNumZeros.length > 0) {
+            steps.push(`Zeros de $N(x)$: ${uniqueNumZeros.map(z => `$x = ${z}$`).join(', ')}`);
+          } else {
+            steps.push(`$N(x)$ não possui zeros reais no intervalo analisado`);
+          }
+          
+          steps.push(`PASSO 4 — Encontrar zeros do denominador $D(x)$\n\nZeros são valores onde $D(x) = 0$ (pontos de descontinuidade)`);
+          
+          if (uniqueDenZeros.length > 0) {
+            steps.push(`Zeros de $D(x)$: ${uniqueDenZeros.map(z => `$x = ${z}$`).join(', ')}\n\nA função não está definida nestes pontos!`);
+          } else {
+            steps.push(`$D(x)$ não possui zeros reais (função definida em todo $\\mathbb{R}$)`);
+          }
+          
+          // Create comprehensive sign analysis
+          steps.push(`PASSO 5 — Tabela de sinais completa`);
+          
+          const criticalPoints = [...uniqueNumZeros, ...uniqueDenZeros].sort((a, b) => a - b);
+          const testPoints = [-15, ...criticalPoints, 15];
+          
+          let signTable = `\n| $x$ | $N(x)$ | $D(x)$ | $f(x) = \\frac{N(x)}{D(x)}$ |\n|---|---|---|---|\n`;
+          
+          for (let i = 0; i < testPoints.length - 1; i++) {
+            const testX = (testPoints[i] + testPoints[i + 1]) / 2;
+            
+            try {
+              const numValue = compiledNum.evaluate({ x: testX });
+              const denValue = compiledDen.evaluate({ x: testX });
+              
+              const numSign = Math.abs(numValue) < 0.001 ? "0" : numValue > 0 ? "+" : "−";
+              const denSign = Math.abs(denValue) < 0.001 ? "0" : denValue > 0 ? "+" : "−";
+              
+              let resultSign;
+              if (denSign === "0") {
+                resultSign = "∄";
+              } else if (numSign === "0") {
+                resultSign = "0";
+              } else {
+                resultSign = (numSign === "+" && denSign === "+") || (numSign === "−" && denSign === "−") ? "+" : "−";
+              }
+              
+              const interval = i === 0 
+                ? `$x < ${testPoints[i + 1].toFixed(1)}$`
+                : i === testPoints.length - 2
+                ? `$x > ${testPoints[i].toFixed(1)}$`
+                : `$${testPoints[i].toFixed(1)} < x < ${testPoints[i + 1].toFixed(1)}$`;
+              
+              signTable += `| ${interval} | $${numSign}$ | $${denSign}$ | $${resultSign}$ |\n`;
+            } catch (e) {
+              // Skip
+            }
+          }
+          
+          steps.push(signTable);
+          steps.push(`Legenda:\n• $+$ : positivo\n• $-$ : negativo\n• $0$ : zero\n• $\\nexists$ : não existe`);
           
         } else {
           // Fallback for complex rational functions
           const parsed = math.parse(functionInput);
           const compiled = parsed.compile();
           
-          steps.push(`**PASSO 2** — Analisar sinais\n\nFunção racional detectada.`);
+          steps.push(`PASSO 2 — Analisar sinais da função racional`);
           
           const testPoints = [-10, -5, -2, -1, 0, 1, 2, 5, 10];
           const signs: string[] = [];
@@ -260,51 +419,91 @@ export const Calculator = () => {
             try {
               const value = compiled.evaluate({ x });
               if (Math.abs(value) < 0.001) {
-                signs.push(`$x=${x}$: $0$ (zero)`);
+                signs.push(`$x=${x}$: $0$`);
+              } else if (!isFinite(value)) {
+                signs.push(`$x=${x}$: $\\nexists$`);
               } else if (value > 0) {
-                signs.push(`$x=${x}$: $+$ (positivo)`);
+                signs.push(`$x=${x}$: $+$`);
               } else {
-                signs.push(`$x=${x}$: $-$ (negativo)`);
+                signs.push(`$x=${x}$: $-$`);
               }
             } catch (e) {
-              signs.push(`$x=${x}$: $\\nexists$ (indefinido)`);
+              signs.push(`$x=${x}$: $\\nexists$`);
             }
           }
           
-          steps.push(`**PASSO 3** — Tabela de sinais\n\n${signs.join(' | ')}`);
+          steps.push(`Tabela de sinais:\n\n${signs.join(' | ')}`);
         }
       } else {
         // Non-rational function
         const parsed = math.parse(functionInput);
         const compiled = parsed.compile();
         
-        steps.push(`**PASSO 2** — Encontrar zeros e analisar sinais`);
+        steps.push(`PASSO 2 — Encontrar zeros da função\n\nZeros são valores onde $f(x) = 0$`);
         
-        const testPoints = [-10, -5, -2, -1, 0, 1, 2, 5, 10];
-        const signs: string[] = [];
+        // Find zeros
+        const rangePoints = [];
+        for (let x = -20; x <= 20; x += 0.5) {
+          rangePoints.push(x);
+        }
         
-        for (const x of testPoints) {
+        const zeros = [];
+        for (let i = 0; i < rangePoints.length - 1; i++) {
           try {
-            const value = compiled.evaluate({ x });
-            if (Math.abs(value) < 0.001) {
-              signs.push(`$x=${x}$: $0$ (zero)`);
-            } else if (value > 0) {
-              signs.push(`$x=${x}$: $+$ (positivo)`);
-            } else {
-              signs.push(`$x=${x}$: $-$ (negativo)`);
+            const x1 = rangePoints[i];
+            const x2 = rangePoints[i + 1];
+            
+            const y1 = compiled.evaluate({ x: x1 });
+            const y2 = compiled.evaluate({ x: x2 });
+            
+            if (Math.abs(y1) < 0.01) zeros.push(x1);
+            if (y1 * y2 < 0) {
+              zeros.push((x1 + x2) / 2);
             }
           } catch (e) {
-            signs.push(`$x=${x}$: $\\nexists$ (indefinido)`);
+            // Skip
           }
         }
         
-        steps.push(`**PASSO 3** — Tabela de sinais\n\n${signs.join(' | ')}`);
+        const uniqueZeros = [...new Set(zeros.map(z => Math.round(z * 2) / 2))].sort((a, b) => a - b);
+        
+        if (uniqueZeros.length > 0) {
+          steps.push(`Zeros encontrados: ${uniqueZeros.map(z => `$x = ${z}$`).join(', ')}`);
+        } else {
+          steps.push(`Não foram encontrados zeros reais no intervalo analisado`);
+        }
+        
+        steps.push(`PASSO 3 — Tabela de sinais\n\nAnalisando o sinal da função em diferentes intervalos:`);
+        
+        const testPoints = [-15, ...uniqueZeros, 15];
+        let signTable = `\n| Intervalo | Sinal de $f(x)$ |\n|---|---|\n`;
+        
+        for (let i = 0; i < testPoints.length - 1; i++) {
+          const testX = (testPoints[i] + testPoints[i + 1]) / 2;
+          
+          try {
+            const value = compiled.evaluate({ x: testX });
+            const sign = Math.abs(value) < 0.001 ? "0" : value > 0 ? "+" : "−";
+            
+            const interval = i === 0 
+              ? `$x < ${testPoints[i + 1].toFixed(1)}$`
+              : i === testPoints.length - 2
+              ? `$x > ${testPoints[i].toFixed(1)}$`
+              : `$${testPoints[i].toFixed(1)} < x < ${testPoints[i + 1].toFixed(1)}$`;
+            
+            signTable += `| ${interval} | $${sign}$ |\n`;
+          } catch (e) {
+            // Skip
+          }
+        }
+        
+        steps.push(signTable);
       }
       
       setSteps(steps);
       setResult("Análise completa");
     } catch (error) {
-      setSteps(["Erro ao analisar. Verifique a sintaxe da função."]);
+      setSteps(["ERRO — Verifique a sintaxe da função"]);
       setResult(null);
     }
   };
