@@ -77,4 +77,29 @@ All colors MUST be HSL.
     font-size: 1em;
     line-height: 1.8;
   }
+
+  /* KaTeX styling */
+  .katex {
+    font-size: 1.15em;
+    color: #e5e7eb;
+  }
+
+  .katex-display {
+    margin: 1.25em 0;
+  }
+
+  .katex-display > .katex {
+    text-align: center;
+  }
+
+  /* Make math expressions more visible */
+  .katex .mord,
+  .katex .mbin,
+  .katex .mrel,
+  .katex .mopen,
+  .katex .mclose,
+  .katex .mpunct,
+  .katex .minner {
+    color: #e5e7eb !important;
+  }
 }
