@@ -121,20 +121,78 @@ export const GraphDisplay = ({ functionInput, point, analysisType }: GraphDispla
 
       ctx.stroke();
 
-      // Draw point of analysis
+      // Draw point of analysis and detect discontinuities
       if (isFinite(point)) {
         const px = centerX + point * scale;
+        const delta = 0.0001;
+        
         try {
           const y = compiled.evaluate({ x: point });
-          const py = centerY - y * scale;
+          const yLeft = compiled.evaluate({ x: point - delta });
+          const yRight = compiled.evaluate({ x: point + delta });
+          
+          // Check if there's a removable discontinuity
+          const isRemovableDiscontinuity = !isFinite(y) && 
+                                           isFinite(yLeft) && 
+                                           isFinite(yRight) && 
+                                           Math.abs(yLeft - yRight) < 0.1;
 
-          if (isFinite(y) && Math.abs(y) < 100) {
+          if (isRemovableDiscontinuity) {
+            // Draw open circle at the limit value
+            const limitY = (yLeft + yRight) / 2;
+            const py = centerY - limitY * scale;
+            
+            if (Math.abs(limitY) < 100) {
+              // Draw white circle with hollow center
+              ctx.strokeStyle = "#ef4444";
+              ctx.fillStyle = "#000000";
+              ctx.lineWidth = 3;
+              ctx.beginPath();
+              ctx.arc(px, py, 7, 0, 2 * Math.PI);
+              ctx.fill();
+              ctx.stroke();
+            }
+          } else if (isFinite(y) && Math.abs(y) < 100) {
+            // Normal point - filled circle
+            const py = centerY - y * scale;
             ctx.fillStyle = "#ef4444";
             ctx.beginPath();
             ctx.arc(px, py, 6, 0, 2 * Math.PI);
             ctx.fill();
+          }
 
-            // Draw vertical line
+          // Draw vertical line
+          ctx.strokeStyle = "#ef4444";
+          ctx.lineWidth = 2;
+          ctx.setLineDash([5, 5]);
+          ctx.beginPath();
+          ctx.moveTo(px, 0);
+          ctx.lineTo(px, height);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          
+        } catch (e) {
+          // Point not defined - try to draw open circle if limit exists
+          try {
+            const yLeft = compiled.evaluate({ x: point - delta });
+            const yRight = compiled.evaluate({ x: point + delta });
+            
+            if (isFinite(yLeft) && isFinite(yRight) && Math.abs(yLeft - yRight) < 0.1) {
+              const limitY = (yLeft + yRight) / 2;
+              const py = centerY - limitY * scale;
+              
+              if (Math.abs(limitY) < 100) {
+                ctx.strokeStyle = "#ef4444";
+                ctx.fillStyle = "#000000";
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(px, py, 7, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.stroke();
+              }
+            }
+            
+            // Draw vertical line anyway
             ctx.strokeStyle = "#ef4444";
             ctx.lineWidth = 2;
             ctx.setLineDash([5, 5]);
@@ -143,9 +201,9 @@ export const GraphDisplay = ({ functionInput, point, analysisType }: GraphDispla
             ctx.lineTo(px, height);
             ctx.stroke();
             ctx.setLineDash([]);
+          } catch (e2) {
+            // Really undefined
           }
-        } catch (e) {
-          // Point not defined
         }
       }
 
