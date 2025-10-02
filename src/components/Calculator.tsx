@@ -567,26 +567,25 @@ export const Calculator = () => {
                 <label className="block text-base font-normal mb-4 text-white">
                   Limite
                 </label>
-                <div className="flex items-center gap-4">
-                  <span className="text-white text-xl font-medium">lim</span>
+                <div className="flex items-start gap-4">
+                  <div className="flex flex-col items-center">
+                    <span className="text-white text-xl font-medium">lim</span>
+                    <div className="flex items-center gap-2 text-white text-base mt-1">
+                      <span>x</span>
+                      <span>→</span>
+                      <Input
+                        value={point}
+                        onChange={(e) => setPoint(e.target.value)}
+                        placeholder="valor"
+                        className="bg-black border-2 border-gray-600 text-white h-10 w-20 px-2 text-center"
+                      />
+                    </div>
+                  </div>
                   <Input
                     value={functionInput}
                     onChange={(e) => setFunctionInput(e.target.value)}
                     placeholder="expressão"
                     className="bg-black border-2 border-gray-600 text-white h-14 flex-1 px-4"
-                  />
-                  <Input
-                    value={variable}
-                    onChange={(e) => setVariable(e.target.value)}
-                    placeholder="x"
-                    className="bg-black border-2 border-gray-600 text-white h-14 w-20 text-center"
-                  />
-                  <span className="text-white text-xl">→</span>
-                  <Input
-                    value={point}
-                    onChange={(e) => setPoint(e.target.value)}
-                    placeholder="valor"
-                    className="bg-black border-2 border-gray-600 text-white h-14 w-28 px-4"
                   />
                 </div>
               </div>
