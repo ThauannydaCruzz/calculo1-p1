@@ -564,29 +564,29 @@ export const Calculator = () => {
 
             {analysisType === "limite" ? (
               <div>
-                <label className="block text-base font-normal mb-3 text-white">
+                <label className="block text-base font-normal mb-4 text-white">
                   Limite
                 </label>
-                <div className="flex items-center gap-3">
-                  <span className="text-white text-lg font-medium px-3">lim</span>
+                <div className="flex items-center gap-4">
+                  <span className="text-white text-xl font-medium">lim</span>
                   <Input
                     value={functionInput}
                     onChange={(e) => setFunctionInput(e.target.value)}
                     placeholder="expressão"
-                    className="bg-black border-2 border-gray-600 text-white h-12 flex-1"
+                    className="bg-black border-2 border-gray-600 text-white h-14 flex-1 px-4"
                   />
                   <Input
                     value={variable}
                     onChange={(e) => setVariable(e.target.value)}
                     placeholder="x"
-                    className="bg-black border-2 border-gray-600 text-white h-12 w-16 text-center"
+                    className="bg-black border-2 border-gray-600 text-white h-14 w-20 text-center"
                   />
-                  <span className="text-white text-lg">→</span>
+                  <span className="text-white text-xl">→</span>
                   <Input
                     value={point}
                     onChange={(e) => setPoint(e.target.value)}
                     placeholder="valor"
-                    className="bg-black border-2 border-gray-600 text-white h-12 w-24"
+                    className="bg-black border-2 border-gray-600 text-white h-14 w-28 px-4"
                   />
                 </div>
               </div>
