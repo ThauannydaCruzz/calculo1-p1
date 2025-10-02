@@ -1,73 +1,32 @@
-# Welcome to your Lovable project
+# 📘 Calculadora de Cálculo Diferencial e Integral  
 
-## Project info
+Projeto desenvolvido para a disciplina **Cálculo Diferencial e Integral (04C-2025/2)**.  
+A aplicação permite realizar cálculos de:  
+- Limites  
+- Derivadas  
+- Continuidade  
+- Estudo de sinal  
 
-**URL**: https://lovable.dev/projects/5a2b03ce-cd0b-439a-b5db-cc5b6c4270e7
+Além disso, contém **gráficos e passo a passo** de cada exercício.  
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## 👩‍💻 Equipe
+- Ana Julia Romera  
+- Gabriela Akemi  
+- Sophia Mattos  
+- Thauanny da Cruz  
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/5a2b03ce-cd0b-439a-b5db-cc5b6c4270e7) and start prompting.
+## 🛠️ Tecnologias Utilizadas
+- [Vite](https://vitejs.dev/)  
+- [React](https://react.dev/)  
+- [TypeScript](https://www.typescriptlang.org/)  
+- JavaScript  
+- [TailwindCSS](https://tailwindcss.com/)  
 
-Changes made via Lovable will be committed automatically to this repo.
+---
 
-**Use your preferred IDE**
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/5a2b03ce-cd0b-439a-b5db-cc5b6c4270e7) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+   git clone https://github.com/ThauannydaCruzz/calculo1-p1.git
