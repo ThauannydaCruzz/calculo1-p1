@@ -12,6 +12,7 @@ type AnalysisType = "limite" | "derivada" | "continuidade" | "sinal";
 export const Calculator = () => {
   const [analysisType, setAnalysisType] = useState<AnalysisType>("limite");
   const [functionInput, setFunctionInput] = useState("(x^2 - 8*x + 15)/(x^2 - 5)");
+  const [variable, setVariable] = useState("x");
   const [point, setPoint] = useState("3");
   const [result, setResult] = useState<any>(null);
   const [steps, setSteps] = useState<string[]>([]);
@@ -561,29 +562,61 @@ export const Calculator = () => {
               </Select>
             </div>
 
-            <div>
-              <label className="block text-base font-normal mb-3 text-white">
-                Função f(x)
-              </label>
-              <Input
-                value={functionInput}
-                onChange={(e) => setFunctionInput(e.target.value)}
-                placeholder="Ex: (x^2 - 4)/(x - 2)"
-                className="bg-black border-2 border-gray-600 text-white h-12"
-              />
-            </div>
+            {analysisType === "limite" ? (
+              <div>
+                <label className="block text-base font-normal mb-3 text-white">
+                  Limite
+                </label>
+                <div className="flex items-center gap-3">
+                  <span className="text-white text-lg font-medium px-3">lim</span>
+                  <Input
+                    value={functionInput}
+                    onChange={(e) => setFunctionInput(e.target.value)}
+                    placeholder="expressão"
+                    className="bg-black border-2 border-gray-600 text-white h-12 flex-1"
+                  />
+                  <Input
+                    value={variable}
+                    onChange={(e) => setVariable(e.target.value)}
+                    placeholder="x"
+                    className="bg-black border-2 border-gray-600 text-white h-12 w-16 text-center"
+                  />
+                  <span className="text-white text-lg">→</span>
+                  <Input
+                    value={point}
+                    onChange={(e) => setPoint(e.target.value)}
+                    placeholder="valor"
+                    className="bg-black border-2 border-gray-600 text-white h-12 w-24"
+                  />
+                </div>
+              </div>
+            ) : (
+              <>
+                <div>
+                  <label className="block text-base font-normal mb-3 text-white">
+                    Função f(x)
+                  </label>
+                  <Input
+                    value={functionInput}
+                    onChange={(e) => setFunctionInput(e.target.value)}
+                    placeholder="Ex: (x^2 - 4)/(x - 2)"
+                    className="bg-black border-2 border-gray-600 text-white h-12"
+                  />
+                </div>
 
-            <div>
-              <label className="block text-base font-normal mb-3 text-white">
-                Ponto de Análise
-              </label>
-              <Input
-                value={point}
-                onChange={(e) => setPoint(e.target.value)}
-                placeholder="Ex: 3"
-                className="bg-black border-2 border-gray-600 text-white h-12"
-              />
-            </div>
+                <div>
+                  <label className="block text-base font-normal mb-3 text-white">
+                    Ponto de Análise
+                  </label>
+                  <Input
+                    value={point}
+                    onChange={(e) => setPoint(e.target.value)}
+                    placeholder="Ex: 3"
+                    className="bg-black border-2 border-gray-600 text-white h-12"
+                  />
+                </div>
+              </>
+            )}
           </div>
 
           <div className="flex justify-center">
